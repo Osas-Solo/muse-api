@@ -1,0 +1,16 @@
+{
+  "name": "muse-api",
+  "version": "1.0.0",
+  "description": "API for Muse mobile app for music recognition",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Osaremhen Solomon Ukpebor",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "mysql": "^2.18.1"
+  }
+}
