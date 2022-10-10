@@ -4,6 +4,7 @@
   "description": "API for Muse mobile app for music recognition",
   "main": "index.js",
   "scripts": {
+    "start": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
