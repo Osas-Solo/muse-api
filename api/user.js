@@ -1,7 +1,16 @@
 const express = require("express");
 const database = require("../config/database");
-const {response, request} = require("express");
 
 exports.getSubscriptionTypes = (request, response) => {
-    response.send("Here are your subscriptions");
+    database.getConnection(function(err, connection) {
+        if (err) throw err;
+
+        connection.query("SELECT * FROM subscription_types", function (error, results, fields) {
+
+            response.send(results);
+
+            connection.release();
+            if (error) throw error;
+        });
+    });
 };
