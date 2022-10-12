@@ -1,4 +1,3 @@
-const express = require("express");
 const database = require("../config/database");
 
 exports.getSubscriptionTypes = (request, response) => {
@@ -9,12 +8,18 @@ exports.getSubscriptionTypes = (request, response) => {
 
         connection.query(subscriptionTypesQuery, function (error, results, fields) {
             if (err) {
-                response.status(500).json("Internal server error");
+                response.status(500).json(
+                    {
+                        status: 500,
+                        message: "Internal server error",
+                    }
+                );
                 throw err;
             }
 
             let responseJSON = {
                 status: 200,
+                message: "OK",
                 subscriptionTypes: [],
                 total: results.length,
             };
@@ -25,7 +30,7 @@ exports.getSubscriptionTypes = (request, response) => {
                 responseJSON.subscriptionTypes.push(currentSubscriptionTypeJSON);
             }
 
-            response.status(200).send(responseJSON);
+            response.status(200).json(responseJSON);
 
             connection.release();
             if (error) throw error;
@@ -43,7 +48,12 @@ exports.getSubscriptionTypeByID = (request, response) => {
 
         connection.query(subscriptionTypeQuery, function (error, results, fields) {
             if (err) {
-                response.status(500).json("Internal server error");
+                response.status(500).json(
+                    {
+                        status: 500,
+                        message: "Internal server error",
+                    }
+                );
                 throw err;
             }
 
@@ -53,14 +63,15 @@ exports.getSubscriptionTypeByID = (request, response) => {
                     error: `Sorry, no subscription type with the ID: ${subscriptionTypeID} could be found`,
                 };
 
-                response.status(404).send(responseJSON);
+                response.status(404).json(responseJSON);
             } else {
                 const responseJSON = {
                     status: 200,
+                    message: "OK",
                     subscriptionType: getCurrentSubscriptionTypeJSON(results[0]),
                 };
 
-                response.status(200).send(responseJSON);
+                response.status(200).json(responseJSON);
             }
 
             connection.release();
@@ -80,3 +91,79 @@ function getCurrentSubscriptionTypeJSON(currentSubscriptionType) {
 
     return currentSubscriptionTypeJSON;
 }
+
+exports.login = (request, response) => {
+    const emailAddress = request.body.emailAddress;
+    const password = request.body.password;
+
+    console.log(`Email Address: ${emailAddress}`);
+    console.log(`Password: ${password}`);
+
+    database.getConnection(function (err, connection) {
+        if (err) throw err;
+
+        const emailAddressQuery = `SELECT * FROM users WHERE email_address = '${emailAddress}'`;
+
+        connection.query(emailAddressQuery, function (error, results, fields) {
+            if (err) {
+                response.status(500).json(
+                    {
+                        status: 500,
+                        message: "Internal server error",
+                    }
+                );
+                throw err;
+            }
+
+            if (results.length == 0) {
+                const responseJSON = {
+                    status: 401,
+                    message: "Unauthorised",
+                    error: `Sorry, no user account with the email address: ${emailAddress} could be found. 
+                        Please signup if you haven't yet.`,
+                };
+
+                response.status(401).json(responseJSON);
+            } else {
+                const passwordQuery = `SELECT * FROM users WHERE email_address = '${emailAddress}' 
+                      AND password = SHA(SHA('${password}'))`;
+
+                connection.query(passwordQuery, function (error, results, fields) {
+                    if (err) {
+                        response.status(500).json(
+                            {
+                                status: 500,
+                                message: "Internal server error",
+                            }
+                        );
+                        throw err;
+                    }
+
+                    if (results.length == 0) {
+                        const responseJSON = {
+                            status: 401,
+                            message: "Unauthorised",
+                            error: "Sorry, the password you have entered is incorrect.",
+                        };
+
+                        response.status(401).json(responseJSON);
+                    } else {
+
+                    }
+                    /*
+                                    const responseJSON = {
+                                        status: 200,
+                                        message: "OK",
+                                        subscriptionType: getCurrentSubscriptionTypeJSON(results[0]),
+                                    };
+
+                                    response.status(200).json(responseJSON);
+                    */
+                });
+            }
+
+            connection.release();
+            if (error) throw error;
+        });
+    });
+};
