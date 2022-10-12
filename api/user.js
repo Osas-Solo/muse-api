@@ -254,7 +254,7 @@ exports.signup = (request, response) => {
                 const responseJSON = {
                     status: 401,
                     message: "Unauthorised",
-                    error: `Sorry, there is already a user account with the email address: ${emailAddress} could be found. Please login if you have previously signed up.`,
+                    error: `Sorry, there is already a user account with the email address: ${emailAddress}. Please login instead if you have previously signed up.`,
                 };
 
                 response.status(401).json(responseJSON);
