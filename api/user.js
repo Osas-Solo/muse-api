@@ -96,9 +96,6 @@ exports.login = (request, response) => {
     const emailAddress = request.body.emailAddress;
     const password = request.body.password;
 
-    console.log(`Email Address: ${emailAddress}`);
-    console.log(`Password: ${password}`);
-
     database.getConnection(function (err, connection) {
         if (err) throw err;
 
@@ -119,8 +116,7 @@ exports.login = (request, response) => {
                 const responseJSON = {
                     status: 401,
                     message: "Unauthorised",
-                    error: `Sorry, no user account with the email address: ${emailAddress} could be found. 
-                        Please signup if you haven't yet.`,
+                    error: `Sorry, no user account with the email address: ${emailAddress} could be found. Please signup if you haven't yet.`,
                 };
 
                 response.status(401).json(responseJSON);
@@ -148,17 +144,14 @@ exports.login = (request, response) => {
 
                         response.status(401).json(responseJSON);
                     } else {
+                        const responseJSON = {
+                            status: 200,
+                            message: "OK",
+                            user: getUserJSON(results[0]),
+                        };
 
+                        response.status(200).json(responseJSON);
                     }
-                    /*
-                                    const responseJSON = {
-                                        status: 200,
-                                        message: "OK",
-                                        subscriptionType: getCurrentSubscriptionTypeJSON(results[0]),
-                                    };
-
-                                    response.status(200).json(responseJSON);
-                    */
                 });
             }
 
@@ -167,3 +160,63 @@ exports.login = (request, response) => {
         });
     });
 };
+
+function getUserJSON(user) {
+    let userJSON = {
+        userID: user.userID,
+        emailAddress: user.emailAddress,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        gender: (user.gender === 'M') ? "Male" : "Female",
+        phoneNumber: user.phone_number,
+        joinDate: user.join_date,
+        currentSubscription: user.current_subscription,
+    };
+
+    if (userJSON.currentSubscription != null) {
+        userJSON.currentSubscription = getSubscriptionJSON(userJSON.currentSubscription);
+    }
+
+    return userJSON;
+}
+
+function getSubscriptionJSON(subscriptionID) {
+    let subscriptionJSON = {
+        subscriptionID: null,
+        transactionReference: null,
+        subscriptionType: null,
+        numberOfRecognisedSongs: null,
+        numberOfSongsLeft: null,
+        subscriptionDate: null,
+        pricePaid: null,
+    };
+
+    database.getConnection(function (err, connection) {
+        if (err) throw err;
+
+        const subscriptionQuery = `SELECT * FROM subscriptions s
+            INNER JOIN subscription_types t ON s.subscription_type_id = t.subscription_type_id
+            WHERE subscription_id = ${subscriptionID}`;
+
+        connection.query(subscriptionQuery, function (error, results, fields) {
+            if (err) {
+                throw err;
+            }
+
+            if (results.length !== 0) {
+                subscriptionJSON.subscriptionID = results[0].subscription_id;
+                subscriptionJSON.transactionReference = results[0].transaction_reference;
+                subscriptionJSON.subscriptionType = results[0].subscription_name;
+                subscriptionJSON.numberOfRecognisedSongs = results[0].number_of_recognised_songs;
+                subscriptionJSON.numberOfSongsLeft = results[0].number_of_songs - results[0].number_of_recognised_songs;
+                subscriptionJSON.subscriptionDate = results[0].subscription_date;
+                subscriptionJSON.pricePaid = results[0].price_paid;
+            }
+
+            connection.release();
+            if (error) throw error;
+        });
+    });
+
+    return subscriptionJSON;
+}
