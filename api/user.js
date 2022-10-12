@@ -163,10 +163,9 @@ exports.login = (request, response) => {
 
 function getUserJSON(user) {
     let userJSON = {
-        userID: user.userID,
-        emailAddress: user.emailAddress,
-        firstName: user.first_name,
-        lastName: user.last_name,
+        userID: user.user_id,
+        emailAddress: user.email_address,
+        fullName: user.first_name + " " + user.last_name,
         gender: (user.gender === 'M') ? "Male" : "Female",
         phoneNumber: user.phone_number,
         joinDate: user.join_date,
@@ -195,8 +194,8 @@ function getSubscriptionJSON(subscriptionID) {
         if (err) throw err;
 
         const subscriptionQuery = `SELECT * FROM subscriptions s
-            INNER JOIN subscription_types t ON s.subscription_type_id = t.subscription_type_id
-            WHERE subscription_id = ${subscriptionID}`;
+                                    INNER JOIN subscription_types t ON s.subscription_type_id = t.subscription_type_id
+                                    WHERE subscription_id = ${subscriptionID}`;
 
         connection.query(subscriptionQuery, function (error, results, fields) {
             if (err) {
@@ -215,8 +214,85 @@ function getSubscriptionJSON(subscriptionID) {
 
             connection.release();
             if (error) throw error;
-        });
-    });
+
+            console.log("C:");
+            console.log(subscriptionJSON);
+         });
+     });
+
+    console.log("L:");
+    console.log(subscriptionJSON);
 
     return subscriptionJSON;
 }
+
+exports.signup = (request, response) => {
+    const emailAddress = request.body.emailAddress;
+    const password = request.body.password;
+    const firstName = request.body.firstName;
+    const lastName = request.body.lastName;
+    const gender = request.body.gender;
+    const phoneNumber = request.body.phoneNumber;
+
+    database.getConnection(function (err, connection) {
+        if (err) throw err;
+
+        const emailAddressQuery = `SELECT * FROM users WHERE email_address = '${emailAddress}'`;
+
+        connection.query(emailAddressQuery, function (error, results, fields) {
+            if (err) {
+                response.status(500).json(
+                    {
+                        status: 500,
+                        message: "Internal server error",
+                    }
+                );
+                throw err;
+            }
+
+            if (results.length > 0) {
+                const responseJSON = {
+                    status: 401,
+                    message: "Unauthorised",
+                    error: `Sorry, there is already a user account with the email address: ${emailAddress} could be found. Please login if you have previously signed up.`,
+                };
+
+                response.status(401).json(responseJSON);
+            } else {
+                const userInsertQuery = `INSERT INTO users (email_address, password, first_name, last_name, gender, phone_number) 
+                    VALUE ('${emailAddress}', SHA(SHA('${password}')), '${firstName}', '${lastName}', '${gender}', '${phoneNumber}')`;
+
+                connection.query(userInsertQuery, function (error, results) {
+                    if (err) {
+                        response.status(500).json(
+                            {
+                                status: 500,
+                                message: "Internal server error",
+                            }
+                        );
+                        throw err;
+                    }
+
+                    connection.query(emailAddressQuery, function (error, results, fields) {
+                        if (err) {
+                            throw err;
+                        }
+
+                        if (results.length > 0) {
+                            const responseJSON = {
+                                status: 201,
+                                message: "Created",
+                                user: getUserJSON(results[0]),
+                            };
+
+                            response.status(201).json(responseJSON);
+                        }
+                    });
+                });
+            }
+
+            connection.release();
+            if (error) throw error;
+        });
+    });
+};
