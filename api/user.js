@@ -168,7 +168,7 @@ function getUserJSON(user) {
         fullName: user.first_name.toUpperCase() + " " + user.last_name.toUpperCase(),
         gender: (user.gender === 'M') ? "Male" : "Female",
         phoneNumber: user.phone_number,
-        joinDate: user.join_date,
+        signupDate: user.join_date,
         currentSubscription: user.current_subscription,
     };
 
@@ -329,7 +329,7 @@ function checkSignupDetails(emailAddress, password, passwordConfirmer, firstName
     }
 
     if (!isPasswordValid(password)) {
-        errors.passwordError = "Please enter a valid password. A valid password should have at least one uppercase, one lowercase and one digit. It should also be at least 8 characters long and cannot have more than 20 characters.";
+        errors.passwordError = "Please enter a valid password. A valid password should have at least one uppercase, one lowercase and one digit. It should also contain at least 8 characters and cannot have more than 20 characters.";
     }
 
     if (!isPasswordConfirmed(password, passwordConfirmer)) {
