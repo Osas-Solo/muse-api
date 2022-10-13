@@ -147,10 +147,14 @@ exports.login = (request, response) => {
                         const responseJSON = {
                             status: 200,
                             message: "OK",
-                            user: getUserJSON(results[0]),
+                            user: null,
                         };
 
-                        response.status(200).json(responseJSON);
+                        setUserJSON(results[0], (userJSON) => {
+                            responseJSON.user = userJSON;
+
+                            response.status(200).json(responseJSON);
+                        });
                     }
                 });
             }
@@ -161,7 +165,7 @@ exports.login = (request, response) => {
     });
 };
 
-function getUserJSON(user) {
+function setUserJSON(user, retrieveUserJSON) {
     let userJSON = {
         userID: user.user_id,
         emailAddress: user.email_address,
@@ -173,13 +177,18 @@ function getUserJSON(user) {
     };
 
     if (userJSON.currentSubscription != null) {
-        userJSON.currentSubscription = getSubscriptionJSON(userJSON.currentSubscription, userJSON.userID);
+        setSubscriptionJSON(userJSON.currentSubscription, userJSON.userID, (subscriptionJSON) => {
+            userJSON.currentSubscription = subscriptionJSON;
+
+            return retrieveUserJSON(userJSON);
+        });
+    } else {
+        return retrieveUserJSON(userJSON);
     }
 
-    return userJSON;
 }
 
-function getSubscriptionJSON(subscriptionID, userID) {
+function setSubscriptionJSON(subscriptionID, userID, retrieveSubscriptionJSON) {
     let subscriptionJSON = {
         subscriptionID: null,
         transactionReference: null,
@@ -215,15 +224,9 @@ function getSubscriptionJSON(subscriptionID, userID) {
             connection.release();
             if (error) throw error;
 
-            console.log("C:");
-            console.log(subscriptionJSON);
-         });
+            return retrieveSubscriptionJSON(subscriptionJSON);
+        });
      });
-
-    console.log("L:");
-    console.log(subscriptionJSON);
-
-    return subscriptionJSON;
 }
 
 exports.signup = (request, response) => {
@@ -289,7 +292,7 @@ exports.signup = (request, response) => {
                                 const responseJSON = {
                                     status: 201,
                                     message: "Created",
-                                    user: getUserJSON(results[0]),
+                                    user: setUserJSON(results[0]),
                                 };
 
                                 response.status(201).json(responseJSON);
