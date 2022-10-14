@@ -251,7 +251,7 @@ exports.signup = (request, response) => {
             if (err) throw err;
 
             const emailAddressQuery = `SELECT * FROM users
-                                       WHERE email_address = '${emailAddress}'`;
+                                           WHERE email_address = '${emailAddress}'`;
 
             connection.query(emailAddressQuery, function (error, results, fields) {
                 if (err) {
@@ -440,3 +440,61 @@ exports.getSubscriptionByID = (request, response) => {
         });
     });
 }
+
+exports.getSubscriptions = (request, response) => {
+    const userID = request.params.userID;
+
+    database.getConnection(function (err, connection) {
+        if (err) throw err;
+
+        const subscriptionsQuery = `SELECT * FROM subscriptions WHERE user_id = ${userID} ORDER BY subscription_id DESC`;
+
+        connection.query(subscriptionsQuery, function (error, results, fields) {
+            if (err) {
+                response.status(500).json(
+                    {
+                        status: 500,
+                        message: "Internal server error",
+                    }
+                );
+                throw err;
+            }
+
+            let responseJSON = {
+                status: 200,
+                message: "OK",
+                subscriptions: [],
+                total: results.length,
+            };
+
+            if (results.length > 0) {
+                for (const currentSubscription of results) {
+                    let subscriptionJSON = {
+                        subscriptionID: null,
+                        transactionReference: null,
+                        subscriptionType: null,
+                        numberOfRecognisedSongs: null,
+                        numberOfSongsLeft: null,
+                        subscriptionDate: null,
+                        pricePaid: null,
+                    };
+
+                    subscriptionJSON.subscriptionID = currentSubscription.subscription_id;
+                    subscriptionJSON.transactionReference = currentSubscription.transaction_reference;
+                    subscriptionJSON.subscriptionType = currentSubscription.subscription_name;
+                    subscriptionJSON.numberOfRecognisedSongs = currentSubscription.number_of_recognised_songs;
+                    subscriptionJSON.numberOfSongsLeft = currentSubscription.number_of_songs - results[0].number_of_recognised_songs;
+                    subscriptionJSON.subscriptionDate = currentSubscription.subscription_date;
+                    subscriptionJSON.pricePaid = currentSubscription.price_paid;
+
+                    responseJSON.subscriptions.push(subscriptionJSON);
+                }
+            }
+
+            response.status(200).json(responseJSON);
+
+            connection.release();
+            if (error) throw error;
+        });
+    });
+};
