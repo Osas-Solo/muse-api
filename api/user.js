@@ -1,6 +1,5 @@
 const database = require("../config/database");
 const jwt = require("jsonwebtoken");
-const {decode} = require("jsonwebtoken");
 
 exports.getSubscriptionTypes = (request, response) => {
     database.getConnection(function (err, connection) {
@@ -156,7 +155,9 @@ exports.login = (request, response) => {
                         setUserJSON(results[0], (userJSON) => {
                             responseJSON.user = userJSON;
 
-                            jwt.sign(responseJSON.user, process.env.JWT_SECRET_KEY, {expiresIn: "1h"}, (err, token) => {
+                            const loggedInUser = responseJSON.user;
+
+                            jwt.sign(loggedInUser, process.env.JWT_SECRET_KEY, {expiresIn: "1h"}, (err, token) => {
                                 responseJSON.sessionToken = token;
                                 response.status(200).json(responseJSON);
                             })
@@ -249,8 +250,7 @@ exports.signup = (request, response) => {
         database.getConnection(function (err, connection) {
             if (err) throw err;
 
-            const emailAddressQuery = `SELECT *
-                                       FROM users
+            const emailAddressQuery = `SELECT * FROM users
                                        WHERE email_address = '${emailAddress}'`;
 
             connection.query(emailAddressQuery, function (error, results, fields) {
@@ -400,12 +400,43 @@ function isPhoneNumberValid(phoneNumber) {
     return phoneNumberRegex.test(phoneNumber);
 }
 
-exports.getSubscription = (request, response) => {
-    jwt.verify(request.sessionToken, process.env.JWT_SECRET_KEY, (err, decoded) => {
-        const subscriptionID = request.body.id;
+exports.getSubscriptionByID = (request, response) => {
+    const subscriptionID = request.params.id;
+    const userID = request.params.userID;
 
-        const user = decoded.user;
+    database.getConnection(function (err, connection) {
+        if (err) throw err;
 
-        response.send(user);
-    })
+        const subscriptionQuery = `SELECT * FROM subscriptions WHERE subscription_id = '${subscriptionID}' 
+                                        AND user_id = '${userID}'`;
+
+        connection.query(subscriptionQuery, function (error, results, fields) {
+            if (err) {
+                response.status(500).json(
+                    {
+                        status: 500,
+                        message: "Internal server error",
+                    }
+                );
+                throw err;
+            }
+
+            if (results.length > 0) {
+                const responseJSON = {
+                    status: 200,
+                    message: "OK",
+                    subscription: null,
+                };
+
+                setSubscriptionJSON(results[0].subscription_id, results[0].user_id, (subscriptionJSON) => {
+                    responseJSON.subscription = subscriptionJSON;
+
+                    response.status(200).json(responseJSON);
+                });
+            }
+
+            connection.release();
+            if (error) throw error;
+        });
+    });
 }
