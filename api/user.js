@@ -1,4 +1,6 @@
 const database = require("../config/database");
+const jwt = require("jsonwebtoken");
+const {decode} = require("jsonwebtoken");
 
 exports.getSubscriptionTypes = (request, response) => {
     database.getConnection(function (err, connection) {
@@ -148,12 +150,16 @@ exports.login = (request, response) => {
                             status: 200,
                             message: "OK",
                             user: null,
+                            sessionToken: null,
                         };
 
                         setUserJSON(results[0], (userJSON) => {
                             responseJSON.user = userJSON;
 
-                            response.status(200).json(responseJSON);
+                            jwt.sign(responseJSON.user, process.env.JWT_SECRET_KEY, {expiresIn: "1h"}, (err, token) => {
+                                responseJSON.sessionToken = token;
+                                response.status(200).json(responseJSON);
+                            })
                         });
                     }
                 });
@@ -185,7 +191,6 @@ function setUserJSON(user, retrieveUserJSON) {
     } else {
         return retrieveUserJSON(userJSON);
     }
-
 }
 
 function setSubscriptionJSON(subscriptionID, userID, retrieveSubscriptionJSON) {
@@ -393,4 +398,14 @@ function isPhoneNumberValid(phoneNumber) {
     const phoneNumberRegex = /^0[7-9][0|1][0-9]{8}$/;
 
     return phoneNumberRegex.test(phoneNumber);
+}
+
+exports.getSubscription = (request, response) => {
+    jwt.verify(request.sessionToken, process.env.JWT_SECRET_KEY, (err, decoded) => {
+        const subscriptionID = request.body.id;
+
+        const user = decoded.user;
+
+        response.send(user);
+    })
 }

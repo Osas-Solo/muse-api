@@ -7,5 +7,6 @@ router.get("/subscription-types/:id", userAPI.getSubscriptionTypeByID);
 router.post("/users", userAPI.signup);
 router.post("/users/signup", userAPI.signup);
 router.post("/users/login", userAPI.login);
+router.get("/users/subscription/:id", userAPI.getSubscription);
 
 module.exports = router;
