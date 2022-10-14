@@ -5,6 +5,7 @@ const prettify = require("express-prettify");
 const userAPI = require("./routes/user");
 const bodyParser = require("body-parser");
 const path = require("path");
+const cors = require("cors");
 
 const publicPath = path.resolve(__dirname, "public");
 app.use(express.static(publicPath));
@@ -14,6 +15,7 @@ app.use(prettify({
     spaces: 4,
 }));
 
+app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json())
 app.use("/user-api", userAPI);
