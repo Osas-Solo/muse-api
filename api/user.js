@@ -9,6 +9,7 @@ exports.getSubscriptionTypes = (request, response) => {
 
         connection.query(subscriptionTypesQuery, function (error, results, fields) {
             if (err) {
+                console.log(responseJSON);
                 response.status(500).json(
                     {
                         status: 500,
@@ -31,6 +32,7 @@ exports.getSubscriptionTypes = (request, response) => {
                 responseJSON.subscriptionTypes.push(currentSubscriptionTypeJSON);
             }
 
+            console.log(responseJSON);
             response.status(200).json(responseJSON);
 
             connection.release();
@@ -49,6 +51,7 @@ exports.getSubscriptionTypeByID = (request, response) => {
 
         connection.query(subscriptionTypeQuery, function (error, results, fields) {
             if (err) {
+                console.log(responseJSON);
                 response.status(500).json(
                     {
                         status: 500,
@@ -64,6 +67,7 @@ exports.getSubscriptionTypeByID = (request, response) => {
                     error: `Sorry, no subscription type with the ID: ${subscriptionTypeID} could be found`,
                 };
 
+                console.log(responseJSON);
                 response.status(404).json(responseJSON);
             } else {
                 const responseJSON = {
@@ -72,6 +76,7 @@ exports.getSubscriptionTypeByID = (request, response) => {
                     subscriptionType: getCurrentSubscriptionTypeJSON(results[0]),
                 };
 
+                console.log(responseJSON);
                 response.status(200).json(responseJSON);
             }
 
@@ -104,6 +109,7 @@ exports.login = (request, response) => {
 
         connection.query(emailAddressQuery, function (error, results, fields) {
             if (err) {
+                console.log(responseJSON);
                 response.status(500).json(
                     {
                         status: 500,
@@ -120,6 +126,7 @@ exports.login = (request, response) => {
                     error: `Sorry, no user account with the email address: ${emailAddress} could be found. Please signup if you haven't yet.`,
                 };
 
+                console.log(responseJSON);
                 response.status(401).json(responseJSON);
             } else {
                 const passwordQuery = `SELECT * FROM users WHERE email_address = '${emailAddress}' 
@@ -127,6 +134,7 @@ exports.login = (request, response) => {
 
                 connection.query(passwordQuery, function (error, results, fields) {
                     if (err) {
+                        console.log(responseJSON);
                         response.status(500).json(
                             {
                                 status: 500,
@@ -143,6 +151,7 @@ exports.login = (request, response) => {
                             error: "Sorry, the password you have entered is incorrect.",
                         };
 
+                        console.log(responseJSON);
                         response.status(401).json(responseJSON);
                     } else {
                         const responseJSON = {
@@ -159,6 +168,8 @@ exports.login = (request, response) => {
 
                             jwt.sign(loggedInUser, process.env.JWT_SECRET_KEY, {expiresIn: "1h"}, (err, token) => {
                                 responseJSON.sessionToken = token;
+
+                                console.log(responseJSON);
                                 response.status(200).json(responseJSON);
                             })
                         });
@@ -255,6 +266,7 @@ exports.signup = (request, response) => {
 
             connection.query(emailAddressQuery, function (error, results, fields) {
                 if (err) {
+                    console.log(responseJSON);
                     response.status(500).json(
                         {
                             status: 500,
@@ -280,6 +292,7 @@ exports.signup = (request, response) => {
 
                     connection.query(userInsertQuery, function (error, results) {
                         if (err) {
+                            console.log(responseJSON);
                             response.status(500).json(
                                 {
                                     status: 500,
@@ -323,6 +336,7 @@ exports.signup = (request, response) => {
             error: signupErrors,
         };
 
+        console.log(responseJSON);
         response.status(401).json(responseJSON);
     }
 };
@@ -418,6 +432,7 @@ exports.getSubscriptionByID = (request, response) => {
 
         connection.query(subscriptionQuery, function (error, results, fields) {
             if (err) {
+                console.log(responseJSON);
                 response.status(500).json(
                     {
                         status: 500,
@@ -437,6 +452,7 @@ exports.getSubscriptionByID = (request, response) => {
                 setSubscriptionJSON(results[0].subscription_id, results[0].user_id, (subscriptionJSON) => {
                     responseJSON.subscription = subscriptionJSON;
 
+                    console.log(responseJSON);
                     response.status(200).json(responseJSON);
                 });
             }
@@ -457,6 +473,7 @@ exports.getSubscriptions = (request, response) => {
 
         connection.query(subscriptionsQuery, function (error, results, fields) {
             if (err) {
+                console.log(responseJSON);
                 response.status(500).json(
                     {
                         status: 500,
@@ -497,6 +514,7 @@ exports.getSubscriptions = (request, response) => {
                 }
             }
 
+            console.log(responseJSON);
             response.status(200).json(responseJSON);
 
             connection.release();
