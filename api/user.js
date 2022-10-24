@@ -298,11 +298,15 @@ exports.signup = (request, response) => {
                                 const responseJSON = {
                                     status: 201,
                                     message: "Created",
-                                    user: setUserJSON(results[0]),
+                                    user: null,
                                 };
 
-                                console.log(responseJSON);
-                                response.status(201).json(responseJSON);
+                                setUserJSON(results[0], (userJSON) => {
+                                    responseJSON.user = userJSON;
+
+                                    console.log(responseJSON);
+                                    response.status(201).json(responseJSON);
+                                });
                             }
                         });
                     });
