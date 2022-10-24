@@ -271,6 +271,7 @@ exports.signup = (request, response) => {
                         error: `Sorry, there is already a user account with the email address: ${emailAddress}. Please login instead if you have previously signed up.`,
                     };
 
+                    console.log(responseJSON);
                     response.status(401).json(responseJSON);
                 } else {
                     const userInsertQuery = `INSERT INTO users (email_address, password, first_name, last_name, gender, phone_number)
@@ -300,6 +301,7 @@ exports.signup = (request, response) => {
                                     user: setUserJSON(results[0]),
                                 };
 
+                                console.log(responseJSON);
                                 response.status(201).json(responseJSON);
                             }
                         });
