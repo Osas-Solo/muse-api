@@ -64,6 +64,7 @@ exports.getSubscriptionTypeByID = (request, response) => {
             if (results.length == 0) {
                 const responseJSON = {
                     status: 404,
+                    message: "Not found",
                     error: `Sorry, no subscription type with the ID: ${subscriptionTypeID} could be found`,
                 };
 
