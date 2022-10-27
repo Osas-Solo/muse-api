@@ -47,7 +47,9 @@ exports.getSubscriptionTypeByID = (request, response) => {
     database.getConnection(function (err, connection) {
         if (err) throw err;
 
-        const subscriptionTypeQuery = `SELECT * FROM subscription_types WHERE subscription_type_id = ${subscriptionTypeID}`;
+        const subscriptionTypeQuery = `SELECT *
+                                       FROM subscription_types
+                                       WHERE subscription_type_id = ${subscriptionTypeID}`;
 
         connection.query(subscriptionTypeQuery, function (error, results, fields) {
             if (err) {
@@ -106,7 +108,9 @@ exports.login = (request, response) => {
     database.getConnection(function (err, connection) {
         if (err) throw err;
 
-        const emailAddressQuery = `SELECT * FROM users WHERE email_address = '${emailAddress}'`;
+        const emailAddressQuery = `SELECT *
+                                   FROM users
+                                   WHERE email_address = '${emailAddress}'`;
 
         connection.query(emailAddressQuery, function (error, results, fields) {
             if (err) {
@@ -124,18 +128,19 @@ exports.login = (request, response) => {
                 const responseJSON = {
                     status: 401,
                     message: "Unauthorised",
-                    error: `Sorry, no user account with the email address: ${emailAddress} could be found. \nPlease signup if you haven't yet.`,
+                    error: `Sorry, no user account with the email address: ${emailAddress} could be found. Please signup if you haven't yet.`,
                 };
 
                 console.log(responseJSON);
                 response.status(401).json(responseJSON);
             } else {
-                const passwordQuery = `SELECT * FROM users WHERE email_address = '${emailAddress}' 
-                      AND password = SHA(SHA('${password}'))`;
+                const passwordQuery = `SELECT *
+                                       FROM users
+                                       WHERE email_address = '${emailAddress}'
+                                         AND password = SHA(SHA('${password}'))`;
 
                 connection.query(passwordQuery, function (error, results, fields) {
                     if (err) {
-                        console.log(responseJSON);
                         response.status(500).json(
                             {
                                 status: 500,
@@ -184,6 +189,57 @@ exports.login = (request, response) => {
     });
 };
 
+exports.getUserProfile = (request, response) => {
+    const userID = request.params.userID;
+
+    database.getConnection(function (err, connection) {
+        if (err) throw err;
+
+        const userQuery = `SELECT *
+                           FROM users
+                           WHERE user_id = ${userID}`;
+
+        connection.query(userQuery, function (error, results, fields) {
+            if (err) {
+                response.status(500).json(
+                    {
+                        status: 500,
+                        message: "Internal server error",
+                    }
+                );
+                throw err;
+            }
+
+            if (results.length == 0) {
+                const responseJSON = {
+                    status: 404,
+                    message: "Not found",
+                    error: `Sorry, no user with the ID: ${userID} could be found.`,
+                };
+
+                console.log(responseJSON);
+                response.status(404).json(responseJSON);
+            } else {
+                const responseJSON = {
+                    status: 200,
+                    message: "OK",
+                    user: null,
+                };
+
+                setUserJSON(results[0], (userJSON) => {
+                    responseJSON.user = userJSON;
+
+                    console.log(responseJSON);
+                    response.status(200).json(responseJSON);
+                });
+            }
+
+            connection.release();
+            if (error) throw error;
+        });
+    });
+};
+
 function setUserJSON(user, retrieveUserJSON) {
     let userJSON = {
         userID: user.user_id,
@@ -220,9 +276,11 @@ function setSubscriptionJSON(subscriptionID, userID, retrieveSubscriptionJSON) {
     database.getConnection(function (err, connection) {
         if (err) throw err;
 
-        const subscriptionQuery = `SELECT * FROM subscriptions s
-                                    INNER JOIN subscription_types t ON s.subscription_type_id = t.subscription_type_id
-                                    WHERE subscription_id = ${subscriptionID} AND user_id = ${userID}`;
+        const subscriptionQuery = `SELECT *
+                                   FROM subscriptions s
+                                            INNER JOIN subscription_types t ON s.subscription_type_id = t.subscription_type_id
+                                   WHERE subscription_id = ${subscriptionID}
+                                     AND user_id = ${userID}`;
 
         connection.query(subscriptionQuery, function (error, results, fields) {
             if (err) {
@@ -244,7 +302,7 @@ function setSubscriptionJSON(subscriptionID, userID, retrieveSubscriptionJSON) {
 
             return retrieveSubscriptionJSON(subscriptionJSON);
         });
-     });
+    });
 }
 
 exports.signup = (request, response) => {
@@ -262,12 +320,12 @@ exports.signup = (request, response) => {
         database.getConnection(function (err, connection) {
             if (err) throw err;
 
-            const emailAddressQuery = `SELECT * FROM users
-                                           WHERE email_address = '${emailAddress}'`;
+            const emailAddressQuery = `SELECT *
+                                       FROM users
+                                       WHERE email_address = '${emailAddress}'`;
 
             connection.query(emailAddressQuery, function (error, results, fields) {
                 if (err) {
-                    console.log(responseJSON);
                     response.status(500).json(
                         {
                             status: 500,
@@ -281,7 +339,7 @@ exports.signup = (request, response) => {
                     const responseJSON = {
                         status: 401,
                         message: "Unauthorised",
-                        error: `Sorry, there is already a user account with the email address: ${emailAddress}. \nPlease login instead if you have previously signed up.`,
+                        error: `Sorry, there is already a user account with the email address: ${emailAddress}. Please login instead if you have previously signed up.`,
                     };
 
                     console.log(responseJSON);
@@ -293,7 +351,6 @@ exports.signup = (request, response) => {
 
                     connection.query(userInsertQuery, function (error, results) {
                         if (err) {
-                            console.log(responseJSON);
                             response.status(500).json(
                                 {
                                     status: 500,
@@ -428,8 +485,10 @@ exports.getSubscriptionByID = (request, response) => {
     database.getConnection(function (err, connection) {
         if (err) throw err;
 
-        const subscriptionQuery = `SELECT * FROM subscriptions WHERE subscription_id = '${subscriptionID}' 
-                                        AND user_id = '${userID}'`;
+        const subscriptionQuery = `SELECT *
+                                   FROM subscriptions
+                                   WHERE subscription_id = '${subscriptionID}'
+                                     AND user_id = '${userID}'`;
 
         connection.query(subscriptionQuery, function (error, results, fields) {
             if (err) {
@@ -470,7 +529,10 @@ exports.getSubscriptions = (request, response) => {
     database.getConnection(function (err, connection) {
         if (err) throw err;
 
-        const subscriptionsQuery = `SELECT * FROM subscriptions WHERE user_id = ${userID} ORDER BY subscription_id DESC`;
+        const subscriptionsQuery = `SELECT *
+                                    FROM subscriptions
+                                    WHERE user_id = ${userID}
+                                    ORDER BY subscription_id DESC`;
 
         connection.query(subscriptionsQuery, function (error, results, fields) {
             if (err) {
