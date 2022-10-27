@@ -9,7 +9,6 @@ exports.getSubscriptionTypes = (request, response) => {
 
         connection.query(subscriptionTypesQuery, function (error, results, fields) {
             if (err) {
-                console.log(responseJSON);
                 response.status(500).json(
                     {
                         status: 500,
@@ -53,7 +52,6 @@ exports.getSubscriptionTypeByID = (request, response) => {
 
         connection.query(subscriptionTypeQuery, function (error, results, fields) {
             if (err) {
-                console.log(responseJSON);
                 response.status(500).json(
                     {
                         status: 500,
@@ -63,7 +61,7 @@ exports.getSubscriptionTypeByID = (request, response) => {
                 throw err;
             }
 
-            if (results.length == 0) {
+            if (results.length === 0) {
                 const responseJSON = {
                     status: 404,
                     message: "Not found",
@@ -90,15 +88,13 @@ exports.getSubscriptionTypeByID = (request, response) => {
 };
 
 function getCurrentSubscriptionTypeJSON(currentSubscriptionType) {
-    let currentSubscriptionTypeJSON = {
+    return {
         subscriptionTypeID: currentSubscriptionType.subscription_type_id,
         subscriptionCode: currentSubscriptionType.subscription_code,
         subscriptionName: currentSubscriptionType.subscription_name,
         price: currentSubscriptionType.price,
         numberOfSongs: currentSubscriptionType.number_of_songs,
     };
-
-    return currentSubscriptionTypeJSON;
 }
 
 exports.login = (request, response) => {
@@ -114,7 +110,6 @@ exports.login = (request, response) => {
 
         connection.query(emailAddressQuery, function (error, results, fields) {
             if (err) {
-                console.log(responseJSON);
                 response.status(500).json(
                     {
                         status: 500,
@@ -124,7 +119,7 @@ exports.login = (request, response) => {
                 throw err;
             }
 
-            if (results.length == 0) {
+            if (results.length === 0) {
                 const responseJSON = {
                     status: 401,
                     message: "Unauthorised",
@@ -150,7 +145,7 @@ exports.login = (request, response) => {
                         throw err;
                     }
 
-                    if (results.length == 0) {
+                    if (results.length === 0) {
                         const responseJSON = {
                             status: 401,
                             message: "Unauthorised",
@@ -210,7 +205,7 @@ exports.getUserProfile = (request, response) => {
                 throw err;
             }
 
-            if (results.length == 0) {
+            if (results.length === 0) {
                 const responseJSON = {
                     status: 404,
                     message: "Not found",
@@ -492,7 +487,6 @@ exports.getSubscriptionByID = (request, response) => {
 
         connection.query(subscriptionQuery, function (error, results, fields) {
             if (err) {
-                console.log(responseJSON);
                 response.status(500).json(
                     {
                         status: 500,
@@ -536,7 +530,6 @@ exports.getSubscriptions = (request, response) => {
 
         connection.query(subscriptionsQuery, function (error, results, fields) {
             if (err) {
-                console.log(responseJSON);
                 response.status(500).json(
                     {
                         status: 500,
@@ -579,6 +572,91 @@ exports.getSubscriptions = (request, response) => {
 
             console.log(responseJSON);
             response.status(200).json(responseJSON);
+
+            connection.release();
+            if (error) throw error;
+        });
+    });
+};
+
+exports.paySubscription = (request, response) => {
+    const userID = request.params.userID;
+    const transactionReference = request.body.transactionReference;
+    const subscriptionTypeID = request.body.subscriptionType;
+    const amountPaid = request.body.amountPaid;
+
+    database.getConnection(function (err, connection) {
+        if (err) throw err;
+
+        const subscriptionInsertQuery = `INSERT INTO subscriptions 
+                                            (transaction_reference, subscription_type_id, user_id, price_paid) VALUE 
+                                             ('${transactionReference}', ${subscriptionTypeID}, ${userID}, ${amountPaid})`;
+
+        connection.query(subscriptionInsertQuery, function (error, results, fields) {
+            if (err) {
+                response.status(500).json(
+                    {
+                        status: 500,
+                        message: "Internal server error",
+                    }
+                );
+                throw err;
+            }
+
+            let responseJSON = {
+                status: 200,
+                message: "OK",
+                subscription: null,
+            };
+
+            const currentSubscriptionQuery = `SELECT *
+                                    FROM subscriptions
+                                    WHERE user_id = ${userID}
+                                    ORDER BY subscription_id DESC`;
+
+            connection.query(currentSubscriptionQuery, function (error, results, fields) {
+                if (err) {
+                    response.status(500).json(
+                        {
+                            status: 500,
+                            message: "Internal server error",
+                        }
+                    );
+                    throw err;
+                }
+
+                if (results.length > 0) {
+                    setSubscriptionJSON(results[0].subscription_id, results[0].user_id, (subscriptionJSON) => {
+                        responseJSON.subscription = subscriptionJSON;
+
+                        console.log(responseJSON);
+                        response.status(200).json(responseJSON);
+
+                        const currentSubscriptionID = results[0].subscription_id;
+
+                        const currentSubscriptionUpdateQuery = `UPDATE users SET 
+                            current_subscription = ${currentSubscriptionID} WHERE user_id = ${userID}`;
+
+                        connection.query(currentSubscriptionUpdateQuery, function (error, results, fields) {
+                            if (err) {
+                                response.status(500).json(
+                                    {
+                                        status: 500,
+                                        message: "Internal server error",
+                                    }
+                                );
+                                throw err;
+                            }
+
+                            connection.release();
+                            if (error) throw error;
+                        });
+                    });
+                }
+
+                connection.release();
+                if (error) throw error;
+            });
 
             connection.release();
             if (error) throw error;
