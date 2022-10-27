@@ -588,9 +588,10 @@ exports.paySubscription = (request, response) => {
     database.getConnection(function (err, connection) {
         if (err) throw err;
 
-        const subscriptionInsertQuery = `INSERT INTO subscriptions 
-                                            (transaction_reference, subscription_type_id, user_id, price_paid) VALUE 
-                                             ('${transactionReference}', ${subscriptionTypeID}, ${userID}, ${amountPaid})`;
+        const subscriptionInsertQuery = `INSERT INTO subscriptions
+                                             (transaction_reference, subscription_type_id, user_id, price_paid) VALUE
+                                             ('${transactionReference}', ${subscriptionTypeID}, ${userID},
+                                              ${amountPaid})`;
 
         connection.query(subscriptionInsertQuery, function (error, results, fields) {
             if (err) {
@@ -610,9 +611,9 @@ exports.paySubscription = (request, response) => {
             };
 
             const currentSubscriptionQuery = `SELECT *
-                                    FROM subscriptions
-                                    WHERE user_id = ${userID}
-                                    ORDER BY subscription_id DESC`;
+                                              FROM subscriptions
+                                              WHERE user_id = ${userID}
+                                              ORDER BY subscription_id DESC`;
 
             connection.query(currentSubscriptionQuery, function (error, results, fields) {
                 if (err) {
@@ -634,8 +635,9 @@ exports.paySubscription = (request, response) => {
 
                         const currentSubscriptionID = results[0].subscription_id;
 
-                        const currentSubscriptionUpdateQuery = `UPDATE users SET 
-                            current_subscription = ${currentSubscriptionID} WHERE user_id = ${userID}`;
+                        const currentSubscriptionUpdateQuery = `UPDATE users
+                                                                SET current_subscription = ${currentSubscriptionID}
+                                                                WHERE user_id = ${userID}`;
 
                         connection.query(currentSubscriptionUpdateQuery, function (error, results, fields) {
                             if (err) {
@@ -651,6 +653,90 @@ exports.paySubscription = (request, response) => {
                             connection.release();
                             if (error) throw error;
                         });
+                    });
+                }
+
+                connection.release();
+                if (error) throw error;
+            });
+
+            connection.release();
+            if (error) throw error;
+        });
+    });
+};
+
+exports.updateSubscription = (request, response) => {
+    const userID = request.params.userID;
+    const subscriptionID = request.params.subscriptionID;
+    const numberOfNewlyRecognisedSongs = request.body.numberOfNewlyRecognisedSongs;
+
+    database.getConnection(function (err, connection) {
+        if (err) throw err;
+
+        const subscriptionUpdateQuery = `UPDATE subscriptions
+                                         SET number_of_recognised_songs = number_of_recognised_songs + ${numberOfNewlyRecognisedSongs}
+                                         WHERE subscription_id = ${subscriptionID} AND user_id = ${userID}`;
+
+        connection.query(subscriptionUpdateQuery, function (error, results, fields) {
+            if (err) {
+                response.status(500).json(
+                    {
+                        status: 500,
+                        message: "Internal server error",
+                    }
+                );
+                throw err;
+            }
+
+            let responseJSON = {
+                status: 200,
+                message: "OK",
+                subscription: null,
+            };
+
+            const currentSubscriptionQuery = `SELECT *
+                                              FROM subscriptions
+                                              WHERE subscription_id = ${subscriptionID}`;
+
+            connection.query(currentSubscriptionQuery, function (error, results, fields) {
+                if (err) {
+                    response.status(500).json(
+                        {
+                            status: 500,
+                            message: "Internal server error",
+                        }
+                    );
+                    throw err;
+                }
+
+                if (results.length > 0) {
+                    setSubscriptionJSON(results[0].subscription_id, results[0].user_id, (subscriptionJSON) => {
+                        responseJSON.subscription = subscriptionJSON;
+
+                        console.log(responseJSON);
+                        response.status(200).json(responseJSON);
+
+                        if (responseJSON.subscription.numberOfSongsLeft <= 0) {
+                            const currentSubscriptionUpdateQuery = `UPDATE users
+                                                                SET current_subscription = null
+                                                                WHERE user_id = ${userID}`;
+
+                            connection.query(currentSubscriptionUpdateQuery, function (error, results, fields) {
+                                if (err) {
+                                    response.status(500).json(
+                                        {
+                                            status: 500,
+                                            message: "Internal server error",
+                                        }
+                                    );
+                                    throw err;
+                                }
+
+                                connection.release();
+                                if (error) throw error;
+                            });
+                        }
                     });
                 }
 
