@@ -273,7 +273,7 @@ function setSubscriptionJSON(subscriptionID, userID, retrieveSubscriptionJSON) {
 
         const subscriptionQuery = `SELECT *
                                    FROM subscriptions s
-                                   INNER JOIN subscription_types t ON s.subscription_type_id = t.subscription_type_id
+                                            INNER JOIN subscription_types t ON s.subscription_type_id = t.subscription_type_id
                                    WHERE subscription_id = ${subscriptionID}
                                      AND user_id = ${userID}`;
 
@@ -525,7 +525,7 @@ exports.getSubscriptions = (request, response) => {
 
         const subscriptionsQuery = `SELECT *
                                     FROM subscriptions s
-                                    INNER JOIN subscription_types t ON s.subscription_type_id = t.subscription_type_id
+                                             INNER JOIN subscription_types t ON s.subscription_type_id = t.subscription_type_id
                                     WHERE user_id = ${userID}
                                     ORDER BY subscription_id DESC`;
 
@@ -671,7 +671,8 @@ exports.updateSubscription = (request, response) => {
 
         const subscriptionUpdateQuery = `UPDATE subscriptions
                                          SET number_of_recognised_songs = number_of_recognised_songs + ${numberOfNewlyRecognisedSongs}
-                                         WHERE subscription_id = ${subscriptionID} AND user_id = ${userID}`;
+                                         WHERE subscription_id = ${subscriptionID}
+                                           AND user_id = ${userID}`;
 
         connection.query(subscriptionUpdateQuery, function (error, results, fields) {
             if (error) {
@@ -714,8 +715,8 @@ exports.updateSubscription = (request, response) => {
 
                         if (responseJSON.subscription.numberOfSongsLeft <= 0) {
                             const currentSubscriptionUpdateQuery = `UPDATE users
-                                                                SET current_subscription = null
-                                                                WHERE user_id = ${userID}`;
+                                                                    SET current_subscription = null
+                                                                    WHERE user_id = ${userID}`;
 
                             connection.query(currentSubscriptionUpdateQuery, function (error, results, fields) {
                                 if (error) {
