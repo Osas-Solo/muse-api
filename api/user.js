@@ -2,20 +2,20 @@ const database = require("../config/database");
 const jwt = require("jsonwebtoken");
 
 exports.getSubscriptionTypes = (request, response) => {
-    database.getConnection(function (err, connection) {
-        if (err) throw err;
+    database.getConnection(function (error, connection) {
+        if (error) throw error;
 
         const subscriptionTypesQuery = "SELECT * FROM subscription_types ORDER BY subscription_type_id";
 
         connection.query(subscriptionTypesQuery, function (error, results, fields) {
-            if (err) {
+            if (error) {
                 response.status(500).json(
                     {
                         status: 500,
                         message: "Internal server error",
                     }
                 );
-                throw err;
+                throw error;
             }
 
             let responseJSON = {
@@ -43,22 +43,22 @@ exports.getSubscriptionTypes = (request, response) => {
 exports.getSubscriptionTypeByID = (request, response) => {
     const subscriptionTypeID = request.params.id;
 
-    database.getConnection(function (err, connection) {
-        if (err) throw err;
+    database.getConnection(function (error, connection) {
+        if (error) throw error;
 
         const subscriptionTypeQuery = `SELECT *
                                        FROM subscription_types
                                        WHERE subscription_type_id = ${subscriptionTypeID}`;
 
         connection.query(subscriptionTypeQuery, function (error, results, fields) {
-            if (err) {
+            if (error) {
                 response.status(500).json(
                     {
                         status: 500,
                         message: "Internal server error",
                     }
                 );
-                throw err;
+                throw error;
             }
 
             if (results.length === 0) {
@@ -101,22 +101,22 @@ exports.login = (request, response) => {
     const emailAddress = request.body.emailAddress;
     const password = request.body.password;
 
-    database.getConnection(function (err, connection) {
-        if (err) throw err;
+    database.getConnection(function (error, connection) {
+        if (error) throw error;
 
         const emailAddressQuery = `SELECT *
                                    FROM users
                                    WHERE email_address = '${emailAddress}'`;
 
         connection.query(emailAddressQuery, function (error, results, fields) {
-            if (err) {
+            if (error) {
                 response.status(500).json(
                     {
                         status: 500,
                         message: "Internal server error",
                     }
                 );
-                throw err;
+                throw error;
             }
 
             if (results.length === 0) {
@@ -135,14 +135,14 @@ exports.login = (request, response) => {
                                          AND password = SHA(SHA('${password}'))`;
 
                 connection.query(passwordQuery, function (error, results, fields) {
-                    if (err) {
+                    if (error) {
                         response.status(500).json(
                             {
                                 status: 500,
                                 message: "Internal server error",
                             }
                         );
-                        throw err;
+                        throw error;
                     }
 
                     if (results.length === 0) {
@@ -167,7 +167,7 @@ exports.login = (request, response) => {
 
                             const loggedInUser = responseJSON.user;
 
-                            jwt.sign(loggedInUser, process.env.JWT_SECRET_KEY, {expiresIn: "1h"}, (err, token) => {
+                            jwt.sign(loggedInUser, process.env.JWT_SECRET_KEY, {expiresIn: "1h"}, (error, token) => {
                                 responseJSON.sessionToken = token;
 
                                 console.log(responseJSON);
@@ -187,22 +187,22 @@ exports.login = (request, response) => {
 exports.getUserProfile = (request, response) => {
     const userID = request.params.userID;
 
-    database.getConnection(function (err, connection) {
-        if (err) throw err;
+    database.getConnection(function (error, connection) {
+        if (error) throw error;
 
         const userQuery = `SELECT *
                            FROM users
                            WHERE user_id = ${userID}`;
 
         connection.query(userQuery, function (error, results, fields) {
-            if (err) {
+            if (error) {
                 response.status(500).json(
                     {
                         status: 500,
                         message: "Internal server error",
                     }
                 );
-                throw err;
+                throw error;
             }
 
             if (results.length === 0) {
@@ -268,8 +268,8 @@ function setSubscriptionJSON(subscriptionID, userID, retrieveSubscriptionJSON) {
         pricePaid: null,
     };
 
-    database.getConnection(function (err, connection) {
-        if (err) throw err;
+    database.getConnection(function (error, connection) {
+        if (error) throw error;
 
         const subscriptionQuery = `SELECT *
                                    FROM subscriptions s
@@ -278,8 +278,8 @@ function setSubscriptionJSON(subscriptionID, userID, retrieveSubscriptionJSON) {
                                      AND user_id = ${userID}`;
 
         connection.query(subscriptionQuery, function (error, results, fields) {
-            if (err) {
-                throw err;
+            if (error) {
+                throw error;
             }
 
             if (results.length !== 0) {
@@ -312,22 +312,22 @@ exports.signup = (request, response) => {
     const signupErrors = checkSignupDetails(emailAddress, password, passwordConfirmer, firstName, lastName, gender, phoneNumber);
 
     if (Object.values(signupErrors).every((signupDetailError) => signupDetailError === null)) {
-        database.getConnection(function (err, connection) {
-            if (err) throw err;
+        database.getConnection(function (error, connection) {
+            if (error) throw error;
 
             const emailAddressQuery = `SELECT *
                                        FROM users
                                        WHERE email_address = '${emailAddress}'`;
 
             connection.query(emailAddressQuery, function (error, results, fields) {
-                if (err) {
+                if (error) {
                     response.status(500).json(
                         {
                             status: 500,
                             message: "Internal server error",
                         }
                     );
-                    throw err;
+                    throw error;
                 }
 
                 if (results.length > 0) {
@@ -345,19 +345,19 @@ exports.signup = (request, response) => {
                                                         '${lastName}', '${gender}', '${phoneNumber}')`;
 
                     connection.query(userInsertQuery, function (error, results) {
-                        if (err) {
+                        if (error) {
                             response.status(500).json(
                                 {
                                     status: 500,
                                     message: "Internal server error",
                                 }
                             );
-                            throw err;
+                            throw error;
                         }
 
                         connection.query(emailAddressQuery, function (error, results, fields) {
-                            if (err) {
-                                throw err;
+                            if (error) {
+                                throw error;
                             }
 
                             if (results.length > 0) {
@@ -477,8 +477,8 @@ exports.getSubscriptionByID = (request, response) => {
     const subscriptionID = request.params.id;
     const userID = request.params.userID;
 
-    database.getConnection(function (err, connection) {
-        if (err) throw err;
+    database.getConnection(function (error, connection) {
+        if (error) throw error;
 
         const subscriptionQuery = `SELECT *
                                    FROM subscriptions
@@ -486,14 +486,14 @@ exports.getSubscriptionByID = (request, response) => {
                                      AND user_id = '${userID}'`;
 
         connection.query(subscriptionQuery, function (error, results, fields) {
-            if (err) {
+            if (error) {
                 response.status(500).json(
                     {
                         status: 500,
                         message: "Internal server error",
                     }
                 );
-                throw err;
+                throw error;
             }
 
             if (results.length > 0) {
@@ -520,8 +520,8 @@ exports.getSubscriptionByID = (request, response) => {
 exports.getSubscriptions = (request, response) => {
     const userID = request.params.userID;
 
-    database.getConnection(function (err, connection) {
-        if (err) throw err;
+    database.getConnection(function (error, connection) {
+        if (error) throw error;
 
         const subscriptionsQuery = `SELECT *
                                     FROM subscriptions
@@ -529,14 +529,14 @@ exports.getSubscriptions = (request, response) => {
                                     ORDER BY subscription_id DESC`;
 
         connection.query(subscriptionsQuery, function (error, results, fields) {
-            if (err) {
+            if (error) {
                 response.status(500).json(
                     {
                         status: 500,
                         message: "Internal server error",
                     }
                 );
-                throw err;
+                throw error;
             }
 
             let responseJSON = {
@@ -585,8 +585,8 @@ exports.paySubscription = (request, response) => {
     const subscriptionTypeID = request.body.subscriptionType;
     const amountPaid = request.body.amountPaid;
 
-    database.getConnection(function (err, connection) {
-        if (err) throw err;
+    database.getConnection(function (error, connection) {
+        if (error) throw error;
 
         const subscriptionInsertQuery = `INSERT INTO subscriptions
                                              (transaction_reference, subscription_type_id, user_id, price_paid) VALUE
@@ -594,14 +594,14 @@ exports.paySubscription = (request, response) => {
                                               ${amountPaid})`;
 
         connection.query(subscriptionInsertQuery, function (error, results, fields) {
-            if (err) {
+            if (error) {
                 response.status(500).json(
                     {
                         status: 500,
                         message: "Internal server error",
                     }
                 );
-                throw err;
+                throw error;
             }
 
             let responseJSON = {
@@ -616,14 +616,14 @@ exports.paySubscription = (request, response) => {
                                               ORDER BY subscription_id DESC`;
 
             connection.query(currentSubscriptionQuery, function (error, results, fields) {
-                if (err) {
+                if (error) {
                     response.status(500).json(
                         {
                             status: 500,
                             message: "Internal server error",
                         }
                     );
-                    throw err;
+                    throw error;
                 }
 
                 if (results.length > 0) {
@@ -640,24 +640,18 @@ exports.paySubscription = (request, response) => {
                                                                 WHERE user_id = ${userID}`;
 
                         connection.query(currentSubscriptionUpdateQuery, function (error, results, fields) {
-                            if (err) {
+                            if (error) {
                                 response.status(500).json(
                                     {
                                         status: 500,
                                         message: "Internal server error",
                                     }
                                 );
-                                throw err;
+                                throw error;
                             }
-
-                            connection.release();
-                            if (error) throw error;
                         });
                     });
                 }
-
-                connection.release();
-                if (error) throw error;
             });
 
             connection.release();
@@ -668,25 +662,25 @@ exports.paySubscription = (request, response) => {
 
 exports.updateSubscription = (request, response) => {
     const userID = request.params.userID;
-    const subscriptionID = request.params.subscriptionID;
+    const subscriptionID = request.params.id;
     const numberOfNewlyRecognisedSongs = request.body.numberOfNewlyRecognisedSongs;
 
-    database.getConnection(function (err, connection) {
-        if (err) throw err;
+    database.getConnection(function (error, connection) {
+        if (error) throw error;
 
         const subscriptionUpdateQuery = `UPDATE subscriptions
                                          SET number_of_recognised_songs = number_of_recognised_songs + ${numberOfNewlyRecognisedSongs}
                                          WHERE subscription_id = ${subscriptionID} AND user_id = ${userID}`;
 
         connection.query(subscriptionUpdateQuery, function (error, results, fields) {
-            if (err) {
+            if (error) {
                 response.status(500).json(
                     {
                         status: 500,
                         message: "Internal server error",
                     }
                 );
-                throw err;
+                throw error;
             }
 
             let responseJSON = {
@@ -700,14 +694,14 @@ exports.updateSubscription = (request, response) => {
                                               WHERE subscription_id = ${subscriptionID}`;
 
             connection.query(currentSubscriptionQuery, function (error, results, fields) {
-                if (err) {
+                if (error) {
                     response.status(500).json(
                         {
                             status: 500,
                             message: "Internal server error",
                         }
                     );
-                    throw err;
+                    throw error;
                 }
 
                 if (results.length > 0) {
@@ -723,25 +717,19 @@ exports.updateSubscription = (request, response) => {
                                                                 WHERE user_id = ${userID}`;
 
                             connection.query(currentSubscriptionUpdateQuery, function (error, results, fields) {
-                                if (err) {
+                                if (error) {
                                     response.status(500).json(
                                         {
                                             status: 500,
                                             message: "Internal server error",
                                         }
                                     );
-                                    throw err;
+                                    throw error;
                                 }
-
-                                connection.release();
-                                if (error) throw error;
                             });
                         }
                     });
                 }
-
-                connection.release();
-                if (error) throw error;
             });
 
             connection.release();

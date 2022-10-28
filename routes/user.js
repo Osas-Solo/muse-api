@@ -11,5 +11,6 @@ router.get("/users/:userID", userAPI.getUserProfile);
 router.get("/users/:userID/subscriptions", userAPI.getSubscriptions);
 router.post("/users/:userID/subscriptions", userAPI.paySubscription);
 router.get("/users/:userID/subscriptions/:id", userAPI.getSubscriptionByID);
+router.post("/users/:userID/subscriptions/:id", userAPI.updateSubscription);
 
 module.exports = router;
