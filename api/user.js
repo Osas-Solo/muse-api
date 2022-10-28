@@ -273,7 +273,7 @@ function setSubscriptionJSON(subscriptionID, userID, retrieveSubscriptionJSON) {
 
         const subscriptionQuery = `SELECT *
                                    FROM subscriptions s
-                                            INNER JOIN subscription_types t ON s.subscription_type_id = t.subscription_type_id
+                                   INNER JOIN subscription_types t ON s.subscription_type_id = t.subscription_type_id
                                    WHERE subscription_id = ${subscriptionID}
                                      AND user_id = ${userID}`;
 
@@ -524,7 +524,8 @@ exports.getSubscriptions = (request, response) => {
         if (error) throw error;
 
         const subscriptionsQuery = `SELECT *
-                                    FROM subscriptions
+                                    FROM subscriptions s
+                                    INNER JOIN subscription_types t ON s.subscription_type_id = t.subscription_type_id
                                     WHERE user_id = ${userID}
                                     ORDER BY subscription_id DESC`;
 
