@@ -3,7 +3,16 @@ const jwt = require("jsonwebtoken");
 
 exports.getSubscriptionTypes = (request, response) => {
     database.getConnection(function (error, connection) {
-        if (error) throw error;
+        if (error) {
+            response.status(500).json(
+                {
+                    status: 500,
+                    message: "Internal server error",
+                    error: "Sorry, an error occurred while retrieving the subscription plans. Please try again later.",
+                }
+            );
+            throw error;
+        }
 
         const subscriptionTypesQuery = "SELECT * FROM subscription_types ORDER BY subscription_type_id";
 
@@ -13,6 +22,7 @@ exports.getSubscriptionTypes = (request, response) => {
                     {
                         status: 500,
                         message: "Internal server error",
+                        error: "Sorry, an error occurred while retrieving the subscription plans. Please try again later.",
                     }
                 );
                 throw error;
@@ -35,7 +45,16 @@ exports.getSubscriptionTypes = (request, response) => {
             response.status(200).json(responseJSON);
 
             connection.release();
-            if (error) throw error;
+            if (error) {
+                response.status(500).json(
+                    {
+                        status: 500,
+                        message: "Internal server error",
+                        error: "Sorry, an error occurred while retrieving the subscription plans. Please try again later.",
+                    }
+                );
+                throw error;
+            }
         });
     });
 };
@@ -44,7 +63,16 @@ exports.getSubscriptionTypeByID = (request, response) => {
     const subscriptionTypeID = request.params.id;
 
     database.getConnection(function (error, connection) {
-        if (error) throw error;
+        if (error) {
+            response.status(500).json(
+                {
+                    status: 500,
+                    message: "Internal server error",
+                    error: `Sorry, an error occurred while retrieving the subscription plan with the ID: ${subscriptionTypeID}. Please try again later.`,
+                }
+            );
+            throw error;
+        }
 
         const subscriptionTypeQuery = `SELECT *
                                        FROM subscription_types
@@ -56,6 +84,7 @@ exports.getSubscriptionTypeByID = (request, response) => {
                     {
                         status: 500,
                         message: "Internal server error",
+                        error: `Sorry, an error occurred while retrieving the subscription plan with the ID: ${subscriptionTypeID}. Please try again later.`,
                     }
                 );
                 throw error;
@@ -82,7 +111,16 @@ exports.getSubscriptionTypeByID = (request, response) => {
             }
 
             connection.release();
-            if (error) throw error;
+            if (error) {
+                response.status(500).json(
+                    {
+                        status: 500,
+                        message: "Internal server error",
+                        error: `Sorry, an error occurred while retrieving the subscription plan with the ID: ${subscriptionTypeID}. Please try again later.`,
+                    }
+                );
+                throw error;
+            }
         });
     });
 };
@@ -102,7 +140,16 @@ exports.login = (request, response) => {
     const password = request.body.password;
 
     database.getConnection(function (error, connection) {
-        if (error) throw error;
+        if (error) {
+            response.status(500).json(
+                {
+                    status: 500,
+                    message: "Internal server error",
+                    error: `Sorry, an error occurred while trying to login. Please try again later.`,
+                }
+            );
+            throw error;
+        }
 
         const emailAddressQuery = `SELECT *
                                    FROM users
@@ -114,6 +161,7 @@ exports.login = (request, response) => {
                     {
                         status: 500,
                         message: "Internal server error",
+                        error: `Sorry, an error occurred while trying to login. Please try again later.`,
                     }
                 );
                 throw error;
@@ -140,6 +188,7 @@ exports.login = (request, response) => {
                             {
                                 status: 500,
                                 message: "Internal server error",
+                                error: `Sorry, an error occurred while trying to login. Please try again later.`,
                             }
                         );
                         throw error;
@@ -179,7 +228,16 @@ exports.login = (request, response) => {
             }
 
             connection.release();
-            if (error) throw error;
+            if (error) {
+                response.status(500).json(
+                    {
+                        status: 500,
+                        message: "Internal server error",
+                        error: `Sorry, an error occurred while trying to login. Please try again later.`,
+                    }
+                );
+                throw error;
+            }
         });
     });
 };
@@ -188,7 +246,16 @@ exports.getUserProfile = (request, response) => {
     const userID = request.params.userID;
 
     database.getConnection(function (error, connection) {
-        if (error) throw error;
+        if (error) {
+            response.status(500).json(
+                {
+                    status: 500,
+                    message: "Internal server error",
+                    error: `Sorry, an error occurred while trying to retrieve your profile. Please try again later.`,
+                }
+            );
+            throw error;
+        }
 
         const userQuery = `SELECT *
                            FROM users
@@ -200,6 +267,7 @@ exports.getUserProfile = (request, response) => {
                     {
                         status: 500,
                         message: "Internal server error",
+                        error: `Sorry, an error occurred while trying to retrieve your profile. Please try again later.`,
                     }
                 );
                 throw error;
@@ -230,7 +298,16 @@ exports.getUserProfile = (request, response) => {
             }
 
             connection.release();
-            if (error) throw error;
+            if (error) {
+                response.status(500).json(
+                    {
+                        status: 500,
+                        message: "Internal server error",
+                        error: `Sorry, an error occurred while trying to retrieve your profile. Please try again later.`,
+                    }
+                );
+                throw error;
+            }
         });
     });
 };
@@ -313,7 +390,16 @@ exports.signup = (request, response) => {
 
     if (Object.values(signupErrors).every((signupDetailError) => signupDetailError === null)) {
         database.getConnection(function (error, connection) {
-            if (error) throw error;
+            if (error) {
+                response.status(500).json(
+                    {
+                        status: 500,
+                        message: "Internal server error",
+                        error: `Sorry, an error occurred while trying to signup. Please try again later.`,
+                    }
+                );
+                throw error;
+            }
 
             const emailAddressQuery = `SELECT *
                                        FROM users
@@ -325,6 +411,7 @@ exports.signup = (request, response) => {
                         {
                             status: 500,
                             message: "Internal server error",
+                            error: `Sorry, an error occurred while trying to signup. Please try again later.`,
                         }
                     );
                     throw error;
@@ -350,6 +437,7 @@ exports.signup = (request, response) => {
                                 {
                                     status: 500,
                                     message: "Internal server error",
+                                    error: `Sorry, an error occurred while trying to signup. Please try again later.`,
                                 }
                             );
                             throw error;
@@ -357,6 +445,13 @@ exports.signup = (request, response) => {
 
                         connection.query(emailAddressQuery, function (error, results, fields) {
                             if (error) {
+                                response.status(500).json(
+                                    {
+                                        status: 500,
+                                        message: "Internal server error",
+                                        error: `Sorry, an error occurred while trying to signup. Please try again later.`,
+                                    }
+                                );
                                 throw error;
                             }
 
@@ -379,7 +474,16 @@ exports.signup = (request, response) => {
                 }
 
                 connection.release();
-                if (error) throw error;
+                if (error) {
+                    response.status(500).json(
+                        {
+                            status: 500,
+                            message: "Internal server error",
+                            error: `Sorry, an error occurred while trying to signup. Please try again later.`,
+                        }
+                    );
+                    throw error;
+                }
             });
         });
     } else {
@@ -478,7 +582,16 @@ exports.getSubscriptionByID = (request, response) => {
     const userID = request.params.userID;
 
     database.getConnection(function (error, connection) {
-        if (error) throw error;
+        if (error) {
+            response.status(500).json(
+                {
+                    status: 500,
+                    message: "Internal server error",
+                    error: `Sorry, an error occurred while retrieving the subscription with the ID: ${subscriptionTypeID}.`,
+                }
+            );
+            throw error;
+        }
 
         const subscriptionQuery = `SELECT *
                                    FROM subscriptions
@@ -491,6 +604,7 @@ exports.getSubscriptionByID = (request, response) => {
                     {
                         status: 500,
                         message: "Internal server error",
+                        error: `Sorry, an error occurred while retrieving the subscription with the ID: ${subscriptionTypeID}.`,
                     }
                 );
                 throw error;
@@ -512,7 +626,16 @@ exports.getSubscriptionByID = (request, response) => {
             }
 
             connection.release();
-            if (error) throw error;
+            if (error) {
+                response.status(500).json(
+                    {
+                        status: 500,
+                        message: "Internal server error",
+                        error: `Sorry, an error occurred while retrieving the subscription with the ID: ${subscriptionTypeID}.`,
+                    }
+                );
+                throw error;
+            }
         });
     });
 }
@@ -521,7 +644,16 @@ exports.getSubscriptions = (request, response) => {
     const userID = request.params.userID;
 
     database.getConnection(function (error, connection) {
-        if (error) throw error;
+        if (error) {
+            response.status(500).json(
+                {
+                    status: 500,
+                    message: "Internal server error",
+                    error: `Sorry, an error occurred while retrieving your previous subscriptions. Please try again later`,
+                }
+            );
+            throw error;
+        }
 
         const subscriptionsQuery = `SELECT *
                                     FROM subscriptions s
@@ -535,6 +667,7 @@ exports.getSubscriptions = (request, response) => {
                     {
                         status: 500,
                         message: "Internal server error",
+                        error: `Sorry, an error occurred while retrieving your previous subscriptions. Please try again later`,
                     }
                 );
                 throw error;
@@ -575,7 +708,16 @@ exports.getSubscriptions = (request, response) => {
             response.status(200).json(responseJSON);
 
             connection.release();
-            if (error) throw error;
+            if (error) {
+                response.status(500).json(
+                    {
+                        status: 500,
+                        message: "Internal server error",
+                        error: `Sorry, an error occurred while retrieving your previous subscriptions. Please try again later`,
+                    }
+                );
+                throw error;
+            }
         });
     });
 };
@@ -587,7 +729,16 @@ exports.paySubscription = (request, response) => {
     const amountPaid = request.body.amountPaid;
 
     database.getConnection(function (error, connection) {
-        if (error) throw error;
+        if (error) {
+            response.status(500).json(
+                {
+                    status: 500,
+                    message: "Internal server error",
+                    error: `Sorry, an error occurred while trying to pay subscription. Please try again later`,
+                }
+            );
+            throw error;
+        }
 
         const subscriptionInsertQuery = `INSERT INTO subscriptions
                                              (transaction_reference, subscription_type_id, user_id, price_paid) VALUE
@@ -600,6 +751,7 @@ exports.paySubscription = (request, response) => {
                     {
                         status: 500,
                         message: "Internal server error",
+                        error: `Sorry, an error occurred while trying to pay subscription. Please try again later`,
                     }
                 );
                 throw error;
@@ -622,6 +774,7 @@ exports.paySubscription = (request, response) => {
                         {
                             status: 500,
                             message: "Internal server error",
+                            error: `Sorry, an error occurred while trying to pay subscription. Please try again later`,
                         }
                     );
                     throw error;
@@ -646,6 +799,7 @@ exports.paySubscription = (request, response) => {
                                     {
                                         status: 500,
                                         message: "Internal server error",
+                                        error: `Sorry, an error occurred while trying to pay subscription. Please try again later`,
                                     }
                                 );
                                 throw error;
@@ -656,7 +810,16 @@ exports.paySubscription = (request, response) => {
             });
 
             connection.release();
-            if (error) throw error;
+            if (error) {
+                response.status(500).json(
+                    {
+                        status: 500,
+                        message: "Internal server error",
+                        error: `Sorry, an error occurred while trying to pay subscription. Please try again later`,
+                    }
+                );
+                throw error;
+            }
         });
     });
 };
@@ -667,7 +830,16 @@ exports.updateSubscription = (request, response) => {
     const numberOfNewlyRecognisedSongs = request.body.numberOfNewlyRecognisedSongs;
 
     database.getConnection(function (error, connection) {
-        if (error) throw error;
+        if (error) {
+            response.status(500).json(
+                {
+                    status: 500,
+                    message: "Internal server error",
+                    error: `Sorry, an error occurred while trying to update subscription details. Please try again later`,
+                }
+            );
+            throw error;
+        }
 
         const subscriptionUpdateQuery = `UPDATE subscriptions
                                          SET number_of_recognised_songs = number_of_recognised_songs + ${numberOfNewlyRecognisedSongs}
@@ -680,6 +852,7 @@ exports.updateSubscription = (request, response) => {
                     {
                         status: 500,
                         message: "Internal server error",
+                        error: `Sorry, an error occurred while trying to update subscription details. Please try again later`,
                     }
                 );
                 throw error;
@@ -701,6 +874,7 @@ exports.updateSubscription = (request, response) => {
                         {
                             status: 500,
                             message: "Internal server error",
+                            error: `Sorry, an error occurred while trying to update subscription details. Please try again later`,
                         }
                     );
                     throw error;
@@ -724,6 +898,7 @@ exports.updateSubscription = (request, response) => {
                                         {
                                             status: 500,
                                             message: "Internal server error",
+                                            error: `Sorry, an error occurred while trying to update subscription details. Please try again later`,
                                         }
                                     );
                                     throw error;
@@ -735,7 +910,16 @@ exports.updateSubscription = (request, response) => {
             });
 
             connection.release();
-            if (error) throw error;
+            if (error) {
+                response.status(500).json(
+                    {
+                        status: 500,
+                        message: "Internal server error",
+                        error: `Sorry, an error occurred while trying to update subscription details. Please try again later`,
+                    }
+                );
+                throw error;
+            }
         });
     });
 };
