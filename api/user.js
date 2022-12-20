@@ -428,7 +428,7 @@ exports.signup = (request, response) => {
                     response.status(401).json(responseJSON);
                 } else {
                     const userInsertQuery = `INSERT INTO users (email_address, password, first_name, last_name, gender, phone_number)
-                                                 VALUE ('${emailAddress}', SHA(SHA('${password}')), '${firstName}',
+                                                 VALUES ('${emailAddress}', SHA(SHA('${password}')), '${firstName}',
                                                         '${lastName}', '${gender}', '${phoneNumber}')`;
 
                     connection.query(userInsertQuery, function (error, results) {
@@ -741,7 +741,7 @@ exports.paySubscription = (request, response) => {
         }
 
         const subscriptionInsertQuery = `INSERT INTO subscriptions
-                                             (transaction_reference, subscription_type_id, user_id, price_paid) VALUE
+                                             (transaction_reference, subscription_type_id, user_id, price_paid) VALUES
                                              ('${transactionReference}', ${subscriptionTypeID}, ${userID},
                                               ${amountPaid})`;
 
