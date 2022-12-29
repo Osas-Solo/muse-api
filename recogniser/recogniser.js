@@ -21,14 +21,14 @@ exports.recognise = (request, response) => {
             response.status(200).json(recognitionResult);
         }
     ).catch(error => {
-        console.error(error);
-        response.status(500).json(
-            {
-                status: 500,
-                message: "Internal server error",
-                error: `Sorry, an error occurred while trying to recognise this file.`,
-            }
-        );
-    }
+            console.error(error);
+            response.status(500).json(
+                {
+                    status: 500,
+                    message: "Internal server error",
+                    error: `Sorry, an error occurred while trying to recognise this file.`,
+                }
+            );
+        }
     );
 };
